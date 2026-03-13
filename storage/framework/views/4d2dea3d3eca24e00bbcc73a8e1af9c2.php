@@ -1,25 +1,23 @@
-@extends('layouts.app')
+<?php $__env->startSection('header', 'Products'); ?>
 
-@section('header', 'Products')
-
-@section('main')
+<?php $__env->startSection('main'); ?>
 <div class="bg-white rounded-lg shadow">
     <div class="p-4 border-b">
         <form method="GET" class="flex flex-wrap gap-4 mb-4">
-            <input type="text" name="search" placeholder="Search products..." class="px-4 py-2 border rounded-lg" value="{{ request('search') }}">
+            <input type="text" name="search" placeholder="Search products..." class="px-4 py-2 border rounded-lg" value="<?php echo e(request('search')); ?>">
             <select name="category_id" class="px-4 py-2 border rounded-lg">
                 <option value="">All Categories</option>
-                @foreach($categories as $category)
-                    <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
-                @endforeach
+                <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($category->id); ?>" <?php echo e(request('category_id') == $category->id ? 'selected' : ''); ?>><?php echo e($category->name); ?></option>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </select>
             <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">Filter</button>
         </form>
         
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('products.create') }}" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">Add Product</a>
-            <a href="{{ route('products.template') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Download Template</a>
-            <a href="{{ route('products.export') }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Export CSV</a>
+            <a href="<?php echo e(route('products.create')); ?>" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">Add Product</a>
+            <a href="<?php echo e(route('products.template')); ?>" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Download Template</a>
+            <a href="<?php echo e(route('products.export')); ?>" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Export CSV</a>
             <button onclick="document.getElementById('importModal').classList.remove('hidden')" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">Import CSV</button>
         </div>
     </div>
@@ -28,8 +26,8 @@
     <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 class="text-lg font-semibold mb-4">Import Products</h3>
-            <form method="POST" action="{{ route('products.import') }}" enctype="multipart/form-data">
-                @csrf
+            <form method="POST" action="<?php echo e(route('products.import')); ?>" enctype="multipart/form-data">
+                <?php echo csrf_field(); ?>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Select CSV File</label>
                     <input type="file" name="file" accept=".csv,.txt" class="w-full px-4 py-2 border rounded-lg" required>
@@ -56,36 +54,39 @@
                 </tr>
             </thead>
             <tbody class="divide-y">
-                @forelse($products as $product)
+                <?php $__empty_1 = true; $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <tr>
-                    <td class="px-4 py-3">{{ $product->name }}</td>
-                    <td class="px-4 py-3">{{ $product->sku }}</td>
-                    <td class="px-4 py-3">{{ $product->category?->name }}</td>
-                    <td class="px-4 py-3">${{ number_format($product->cost_price, 2) }}</td>
-                    <td class="px-4 py-3">${{ number_format($product->sell_price, 2) }}</td>
+                    <td class="px-4 py-3"><?php echo e($product->name); ?></td>
+                    <td class="px-4 py-3"><?php echo e($product->sku); ?></td>
+                    <td class="px-4 py-3"><?php echo e($product->category?->name); ?></td>
+                    <td class="px-4 py-3">$<?php echo e(number_format($product->cost_price, 2)); ?></td>
+                    <td class="px-4 py-3">$<?php echo e(number_format($product->sell_price, 2)); ?></td>
                     <td class="px-4 py-3">
-                        @php $stock = $product->productStore->sum('quantity') @endphp
-                        <span class="{{ $stock < 10 ? 'text-red-600' : '' }}">{{ $stock }}</span>
+                        <?php $stock = $product->productStore->sum('quantity') ?>
+                        <span class="<?php echo e($stock < 10 ? 'text-red-600' : ''); ?>"><?php echo e($stock); ?></span>
                     </td>
                     <td class="px-4 py-3">
-                        <a href="{{ route('products.edit', $product) }}" class="text-blue-600 hover:underline mr-2">Edit</a>
-                        <form method="POST" action="{{ route('products.destroy', $product) }}" class="inline">
-                            @csrf @method('DELETE')
+                        <a href="<?php echo e(route('products.edit', $product)); ?>" class="text-blue-600 hover:underline mr-2">Edit</a>
+                        <form method="POST" action="<?php echo e(route('products.destroy', $product)); ?>" class="inline">
+                            <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
                             <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Delete this product?')">Delete</button>
                         </form>
                     </td>
                 </tr>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <tr>
                     <td colspan="7" class="px-4 py-8 text-center text-gray-500">No products found</td>
                 </tr>
-                @endforelse
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
     
     <div class="p-4 border-t">
-        {{ $products->links() }}
+        <?php echo e($products->links()); ?>
+
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\wamp64\www\flourish\flourish\resources\views/products/index.blade.php ENDPATH**/ ?>

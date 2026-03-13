@@ -28,7 +28,9 @@ class ReportController extends Controller
         $totalAmount = $sales->sum('total');
         $totalTax = $sales->sum('tax');
 
-        return view('reports.sales', compact('sales', 'totalSales', 'totalAmount', 'totalTax'));
+        $stores = \App\Models\Store::where('is_active', true)->get();
+
+        return view('reports.sales', compact('sales', 'totalSales', 'totalAmount', 'totalTax', 'stores'));
     }
 
     public function export(Request $request)

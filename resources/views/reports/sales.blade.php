@@ -51,7 +51,7 @@
 <div class="bg-white rounded-lg shadow mt-4">
     <div class="p-4 border-b flex justify-between items-center">
         <h3 class="font-medium">Sales Details</h3>
-        <a href="{{ route('reports.sales.export', request()->query()) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Export</a>
+        <a href="{{ route('reports.export', request()->query()) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Export</a>
     </div>
     
     <div class="overflow-x-auto">

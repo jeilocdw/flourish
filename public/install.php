@@ -147,7 +147,7 @@
                         <button id="start-install" onclick="startInstallation()" class="px-6 py-3 bg-primary hover:bg-emerald-700 text-white font-semibold rounded-lg transition">
                             Start Installation
                         </button>
-                        <a id="go-to-app" href="login" class="hidden px-6 py-3 bg-primary hover:bg-emerald-700 text-white font-semibold rounded-lg transition">
+                        <a id="go-to-app" href="/" class="hidden px-6 py-3 bg-primary hover:bg-emerald-700 text-white font-semibold rounded-lg transition">
                             Go to Application
                         </a>
                     </div>
@@ -187,28 +187,19 @@
         }
 
         function checkRequirements() {
-            // Use AJAX to check PHP requirements server-side
-            fetch('install-api.php?action=check_requirements')
-            .then(res => res.json())
-            .then(data => {
-                setStatus('php-status', data.php >= 8.2, data.php >= 8.2 ? 'OK' : 'Need PHP 8.2+');
-                setStatus('pdo-status', data.pdo, data.pdo ? 'OK' : 'Required');
-                setStatus('mysql-status', data.mysql, data.mysql ? 'OK' : 'Required');
-                setStatus('json-status', data.json, data.json ? 'OK' : 'Required');
-                setStatus('curl-status', data.curl, data.curl ? 'OK' : 'Required');
+            const php = versionCompare(phpversion(), '8.2.0') >= 0;
+            setStatus('php-status', php, php ? 'OK' : 'Need PHP 8.2+');
+            setStatus('pdo-status', extension_loaded('pdo'), extension_loaded('pdo') ? 'OK' : 'Required');
+            setStatus('mysql-status', extension_loaded('pdo_mysql'), extension_loaded('pdo_mysql') ? 'OK' : 'Required');
+            setStatus('json-status', extension_loaded('json'), extension_loaded('json') ? 'OK' : 'Required');
+            setStatus('curl-status', extension_loaded('curl'), extension_loaded('curl') ? 'OK' : 'Required');
 
-                if (data.php >= 8.2 && data.pdo && data.mysql) {
-                    setTimeout(() => {
-                        updateStep(2);
-                        showStep('database-step');
-                    }, 500);
-                }
-            })
-            .catch(err => {
-                // If fetch fails, just proceed to next step (server is running)
-                updateStep(2);
-                showStep('database-step');
-            });
+            if (php && extension_loaded('pdo') && extension_loaded('pdo_mysql')) {
+                setTimeout(() => {
+                    updateStep(2);
+                    showStep('database-step');
+                }, 500);
+            }
         }
 
         function versionCompare(ver1, ver2) {
@@ -236,7 +227,7 @@
                 password: formData.get('db_pass')
             };
 
-            fetch('install-api.php?action=test_db', {
+            fetch('install.php?action=test_db', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(dbConfig)
@@ -262,7 +253,7 @@
         function startInstallation() {
             document.getElementById('start-install').disabled = true;
             
-            fetch('install-api.php?action=install', {
+            fetch('install.php?action=install', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(dbConfig)
@@ -294,7 +285,7 @@
         }
 
         // Check if already installed
-        fetch('install-api.php?action=check_installed')
+        fetch('install.php?action=check_installed')
             .then(res => res.json())
             .then(data => {
                 if (data.installed) {
@@ -314,24 +305,10 @@
 
 <?php
 // Install.php - Server-side handling
-// Handle AJAX requests before outputting any HTML
 
 $action = $_GET['action'] ?? '';
 
-if ($action === 'check_requirements') {
-    header('Content-Type: application/json');
-    echo json_encode([
-        'php' => (float)phpversion(),
-        'pdo' => extension_loaded('pdo'),
-        'mysql' => extension_loaded('pdo_mysql'),
-        'json' => extension_loaded('json'),
-        'curl' => extension_loaded('curl')
-    ]);
-    exit;
-}
-
 if ($action === 'check_installed') {
-    header('Content-Type: application/json');
     $envFile = __DIR__ . '/.env';
     if (!file_exists($envFile)) {
         echo json_encode(['installed' => false]);
@@ -363,7 +340,6 @@ if ($action === 'check_installed') {
 }
 
 if ($action === 'test_db' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json');
     $input = json_decode(file_get_contents('php://input'), true);
     
     try {
@@ -380,7 +356,6 @@ if ($action === 'test_db' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json');
     $input = json_decode(file_get_contents('php://input'), true);
     
     try {
