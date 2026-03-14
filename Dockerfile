@@ -42,9 +42,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Generate app key if not set
-RUN php -r "if(!file_exists('/var/www/html/.env') || !strpos(file_get_contents('/var/www/html/.env'), 'APP_KEY=base64:')) { $key = 'base64:' . base64_encode(random_bytes(32)); file_put_contents('/var/www/html/.env', str_replace('APP_KEY=', 'APP_KEY=' . $key, file_get_contents('/var/www/html/.env'))); }"
-
 # Set proper permissions for storage and bootstrap
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 
