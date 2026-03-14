@@ -156,6 +156,37 @@ vercel
 
 Or connect your GitHub repository to Vercel for automatic deployments.
 
+### Render Deployment
+
+1. **Create render.yaml** in project root:
+
+```yaml
+services:
+  - type: web
+    name: flourish-pos
+    env: php
+    buildCommand: composer install --no-dev --optimize-autoloader
+    startCommand: php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+
+databases:
+  - name: flourish-db
+    plan: free
+    mysqlVersion: "8.0"
+```
+
+2. **Deploy**:
+   - Go to [Render Dashboard](https://dashboard.render.com)
+   - Click "New" → "Blueprint"
+   - Connect your GitHub repository
+   - Select render.yaml and deploy
+
+For detailed guide, see [RENDER.md](RENDER.md)
+
 ### Laravel Forge / Vapor
 
 For managed Laravel hosting, use Laravel Forge or Vapor for easy deployment.

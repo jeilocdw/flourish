@@ -106,6 +106,56 @@ Vercel is serverless, so database must be hosted separately (e.g., MySQL databas
 
 ---
 
+## Render Deployment
+
+### Quick Start
+
+1. Push your code to GitHub
+2. Go to [Render Dashboard](https://dashboard.render.com)
+3. Click "New" → "Web Service"
+4. Connect your GitHub repository
+5. Configure:
+   - **Environment**: PHP
+   - **Build Command**: `composer install --no-dev --optimize-autoloader`
+   - **Start Command**: `php artisan serve --host=0.0.0.0 --port=$PORT`
+6. Create a MySQL database: Click "New" → "MySQL"
+7. Connect the database via environment variables
+
+### Using render.yaml
+
+Create `render.yaml` in project root for automatic deployment:
+
+```yaml
+services:
+  - type: web
+    name: flourish-pos
+    env: php
+    buildCommand: composer install --no-dev --optimize-autoloader
+    startCommand: php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: mysql
+
+databases:
+  - name: flourish-db
+    plan: free
+    mysqlVersion: "8.0"
+```
+
+### Free Tier
+
+- Web service sleeps after 15 min inactivity
+- Free MySQL database included
+- 100GB bandwidth/month
+
+For detailed guide, see [RENDER.md](RENDER.md)
+
+---
+
 ## DigitalOcean App Platform
 
 1. Connect your GitHub repository
