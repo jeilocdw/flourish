@@ -39,6 +39,9 @@ COPY . /var/www/html/
 # Copy production env file
 RUN cp /var/www/html/.env.production /var/www/html/.env
 
+# Generate APP_KEY using artisan
+RUN php /var/www/html/artisan key:generate
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
