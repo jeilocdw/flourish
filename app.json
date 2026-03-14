@@ -1,0 +1,39 @@
+{
+    "name": "Flourish Supermarket POS",
+    "description": "A comprehensive Laravel 12 Point of Sale (POS) application for supermarkets",
+    "repository": "https://github.com/yourusername/flourish",
+    "keywords": ["laravel", "pos", "supermarket", "php"],
+    "env": {
+        "APP_ENV": {
+            "value": "production"
+        },
+        "APP_DEBUG": {
+            "value": "false"
+        },
+        "LOG_CHANNEL": {
+            "value": "stderr"
+        },
+        "DB_CONNECTION": {
+            "value": "mysql"
+        }
+    },
+    "addons": [
+        {
+            "plan": "heroku-postgresql",
+            "options": {
+                "version": "14"
+            }
+        }
+    ],
+    "buildpacks": [
+        {
+            "url": "heroku/php"
+        },
+        {
+            "url": "heroku/nodejs"
+        }
+    ],
+    "scripts": {
+        "postdeploy": "php artisan migrate --force"
+    }
+}

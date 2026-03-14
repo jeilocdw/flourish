@@ -27,6 +27,11 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
+        "post-install-cmd": [
+            "Illuminate\\Foundation\\ComposerScripts::postInstall",
+            "@php artisan key:generate --force",
+            "@php artisan config:cache --force"
+        ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
@@ -45,7 +50,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "php-http/discovery": true
-        }
+        },
+        "process-timeout": 300
     },
     "minimum-stability": "stable",
     "prefer-stable": true

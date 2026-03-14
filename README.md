@@ -97,97 +97,29 @@ After seeding, you can login with:
 4. **Storage Link**: Run `php artisan storage:link` (or create symbolic link manually)
 5. **Permissions**: Ensure `storage/` and `bootstrap/cache/` are writable
 
-### Vercel Deployment
+### Render Deployment (Recommended)
 
-1. **Install Vercel CLI** (optional):
+1. **Push to GitHub**: Push your code to a GitHub repository
 
-```bash
-npm i -g vercel
-```
+2. **Create render.yaml**: Already included in project root
 
-2. **Create vercel.json** in project root:
-
-```json
-{
-    "builds": [
-        {
-            "src": "public/index.php",
-            "use": "@vercel/php"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "/public/index.php"
-        }
-    ]
-}
-```
-
-3. **Update index.php** (in public folder):
-
-Add this at the top after `<?php`:
-
-```php
-// Vercel environment configuration
-if (isset($_ENV['VERCEL'])) {
-    $_SERVER['REQUEST_URI'] = str_replace('/api', '', $_SERVER['REQUEST_URI']);
-    
-    require __DIR__.'/../vendor/autoload.php';
-    
-    $app = require_once __DIR__.'/../bootstrap/app.php';
-    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-    
-    $response = $kernel->handle(
-        $request = Illuminate\Http\Request::capture()
-    );
-    
-    $response->send();
-    $kernel->terminate($request, $response);
-    exit;
-}
-```
-
-4. **Deploy**:
-
-```bash
-vercel
-```
-
-Or connect your GitHub repository to Vercel for automatic deployments.
-
-### Render Deployment
-
-1. **Create render.yaml** in project root:
-
-```yaml
-services:
-  - type: web
-    name: flourish-pos
-    env: php
-    buildCommand: composer install --no-dev --optimize-autoloader
-    startCommand: php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
-    envVars:
-      - key: APP_ENV
-        value: production
-      - key: APP_DEBUG
-        value: false
-
-databases:
-  - name: flourish-db
-    plan: free
-    mysqlVersion: "8.0"
-```
-
-2. **Deploy**:
+3. **Deploy**:
    - Go to [Render Dashboard](https://dashboard.render.com)
    - Click "New" → "Blueprint"
    - Connect your GitHub repository
-   - Select render.yaml and deploy
+   - Select `render.yaml` and click "Apply Blueprint"
+
+4. **Database**: MySQL database will be created automatically
+
+5. **Access**: Your app will be available at `https://flourish-pos.onrender.com`
 
 For detailed guide, see [RENDER.md](RENDER.md)
 
 ### Laravel Forge / Vapor
+
+For managed Laravel hosting, use Laravel Forge or Vapor for easy deployment.
+
+## API Endpoints
 
 For managed Laravel hosting, use Laravel Forge or Vapor for easy deployment.
 
