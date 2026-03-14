@@ -187,19 +187,26 @@
         }
 
         function checkRequirements() {
-            const php = versionCompare(phpversion(), '8.2.0') >= 0;
-            setStatus('php-status', php, php ? 'OK' : 'Need PHP 8.2+');
-            setStatus('pdo-status', extension_loaded('pdo'), extension_loaded('pdo') ? 'OK' : 'Required');
-            setStatus('mysql-status', extension_loaded('pdo_mysql'), extension_loaded('pdo_mysql') ? 'OK' : 'Required');
-            setStatus('json-status', extension_loaded('json'), extension_loaded('json') ? 'OK' : 'Required');
-            setStatus('curl-status', extension_loaded('curl'), extension_loaded('curl') ? 'OK' : 'Required');
-
-            if (php && extension_loaded('pdo') && extension_loaded('pdo_mysql')) {
-                setTimeout(() => {
-                    updateStep(2);
-                    showStep('database-step');
-                }, 500);
-            }
+            // Call server to check requirements
+            fetch('install.php?action=check_requirements')
+            .then(res => res.json())
+            .then(data => {
+                setStatus('php-status', data.php, data.php ? 'OK' : 'Need PHP 8.2+');
+                setStatus('pdo-status', data.pdo, data.pdo ? 'OK' : 'Required');
+                setStatus('mysql-status', data.pdo_mysql, data.pdo_mysql ? 'OK' : 'Required');
+                setStatus('json-status', data.json, data.json ? 'OK' : 'Required');
+                setStatus('curl-status', data.curl, data.curl ? 'OK' : 'Required');
+                
+                if (data.php && data.pdo && data.pdo_mysql && data.json) {
+                    setTimeout(() => {
+                        updateStep(2);
+                        showStep('database-step');
+                    }, 500);
+                }
+            })
+            .catch(err => {
+                showError('Failed to check requirements: ' + err.message);
+            });
         }
 
         function versionCompare(ver1, ver2) {
@@ -307,6 +314,17 @@
 // Install.php - Server-side handling
 
 $action = $_GET['action'] ?? '';
+
+if ($action === 'check_requirements') {
+    echo json_encode([
+        'php' => version_compare(PHP_VERSION, '8.2.0') >= 0,
+        'pdo' => extension_loaded('pdo'),
+        'pdo_mysql' => extension_loaded('pdo_mysql'),
+        'json' => extension_loaded('json'),
+        'curl' => extension_loaded('curl'),
+    ]);
+    exit;
+}
 
 if ($action === 'check_installed') {
     $envFile = __DIR__ . '/.env';
