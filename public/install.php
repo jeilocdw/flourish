@@ -1,5 +1,7 @@
 <?php
 // Install.php - Server-side handling (must be at top)
+error_reporting(0);
+ini_set('display_errors', 0);
 
 $action = $_GET['action'] ?? '';
 
@@ -98,17 +100,19 @@ if ($action === 'test_db' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
-    $input = json_decode(file_get_contents('php://input'), true);
-    
-    if (!$input || !isset($input['host']) || !isset($input['database'])) {
-        echo json_encode(['success' => false, 'message' => 'Missing required fields']);
-        exit;
-    }
-    
-    $dbType = $input['type'] ?? 'pgsql';
-    $isPostgres = ($dbType === 'pgsql');
+    header('Cache-Control: no-cache');
     
     try {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!$input || !isset($input['host']) || !isset($input['database'])) {
+            echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+            exit;
+        }
+        
+        $dbType = $input['type'] ?? 'pgsql';
+        $isPostgres = ($dbType === 'pgsql');
+        
         if ($isPostgres) {
             $dsn = "pgsql:host={$input['host']};port={$input['port']};dbname=postgres";
             $pdo = new PDO($dsn, $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -522,9 +526,17 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             })
             .then(res => {
                 console.log('Response status:', res.status);
-                return res.json();
+                return res.text();
             })
-            .then(data => {
+            .then(text => {
+                console.log('Response text:', text);
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch(e) {
+                    showError('Invalid response: ' + text.substring(0, 200));
+                    return;
+                }
                 console.log('Response data:', data);
                 if (data.success) {
                     document.getElementById('step-migration').innerHTML = '<svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
