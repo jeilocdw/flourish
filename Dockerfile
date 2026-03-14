@@ -36,6 +36,9 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . /var/www/html/
 
+# Copy production env file
+RUN cp /var/www/html/.env.production /var/www/html/.env
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
