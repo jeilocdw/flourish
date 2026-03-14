@@ -18,8 +18,17 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Configure Apache to allow .htaccess
-RUN sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+# Configure Apache to serve from public directory
+RUN echo "<VirtualHost *:80>" > /etc/apache2/sites-available/000-default.conf
+RUN echo "    ServerName localhost" >> /etc/apache2/sites-available/000-default.conf
+RUN echo "    DocumentRoot /var/www/html/public" >> /etc/apache2/sites-available/000-default.conf
+RUN echo "" >> /etc/apache2/sites-available/000-default.conf
+RUN echo "    <Directory /var/www/html/public>" >> /etc/apache2/sites-available/000-default.conf
+RUN echo "        Options -Indexes +FollowSymLinks" >> /etc/apache2/sites-available/000-default.conf
+RUN echo "        AllowOverride All" >> /etc/apache2/sites-available/000-default.conf
+RUN echo "        Require all granted" >> /etc/apache2/sites-available/000-default.conf
+RUN echo "    </Directory>" >> /etc/apache2/sites-available/000-default.conf
+RUN echo "</VirtualHost>" >> /etc/apache2/sites-available/000-default.conf
 
 # Set working directory
 WORKDIR /var/www/html
