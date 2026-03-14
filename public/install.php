@@ -3,7 +3,6 @@
 
 $action = $_GET['action'] ?? '';
 
-// Handle API calls before any HTML output
 if ($action === 'check_requirements') {
     header('Content-Type: application/json');
     echo json_encode([
@@ -73,7 +72,6 @@ if ($action === 'test_db' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     $input = json_decode(file_get_contents('php://input'), true);
     
-    // Determine database type from input
     $dbType = $input['type'] ?? 'pgsql';
     $isPostgres = ($dbType === 'pgsql');
     
@@ -81,7 +79,11 @@ if ($action === 'test_db' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($isPostgres) {
             $dsn = "pgsql:host={$input['host']};port={$input['port']};dbname=postgres";
             $pdo = new PDO($dsn, $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-            @$pdo->exec("CREATE DATABASE \"{$input['database']}\"");
+            try {
+                $pdo->exec("CREATE DATABASE \"{$input['database']}\"");
+            } catch (Exception $e) {
+                // Database exists, continue
+            }
         } else {
             $dsn = "mysql:host={$input['host']};port={$input['port']}";
             $pdo = new PDO($dsn, $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -103,7 +105,6 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Determine database type from input
     $dbType = $input['type'] ?? 'pgsql';
     $isPostgres = ($dbType === 'pgsql');
     
@@ -111,16 +112,13 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($isPostgres) {
             $dsn = "pgsql:host={$input['host']};port={$input['port']};dbname=postgres";
             $pdo = new PDO($dsn, $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-            // Try to create database, ignore if already exists
             try {
                 $pdo->exec("CREATE DATABASE \"{$input['database']}\"");
             } catch (Exception $e) {
-                // Database already exists, continue
+                // Database exists
             }
-            // Reconnect to the new database
             $pdo = new PDO("pgsql:host={$input['host']};port={$input['port']};dbname={$input['database']}", $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
             
-            // PostgreSQL tables
             $pdo->exec("CREATE TABLE IF NOT EXISTS stores (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, code VARCHAR(255) UNIQUE NOT NULL, address TEXT, phone VARCHAR(255), email VARCHAR(255), currency VARCHAR(10) DEFAULT 'USD', currency_symbol VARCHAR(5) DEFAULT '$', is_active BOOLEAN DEFAULT true, is_default BOOLEAN DEFAULT false, created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL)");
             $pdo->exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL, role VARCHAR(20) DEFAULT 'cashier', store_id BIGINT, is_active BOOLEAN DEFAULT true, remember_token VARCHAR(100), created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL)");
             $pdo->exec("CREATE TABLE IF NOT EXISTS categories (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, is_active BOOLEAN DEFAULT true, created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL)");
@@ -138,7 +136,6 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->exec("CREATE TABLE IF NOT EXISTS expenses (id SERIAL PRIMARY KEY, store_id BIGINT NOT NULL, category VARCHAR(255) NOT NULL, amount DECIMAL(10,2) DEFAULT 0, description TEXT, date DATE NOT NULL, created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL)");
             $pdo->exec("CREATE TABLE IF NOT EXISTS settings (id SERIAL PRIMARY KEY, key VARCHAR(255) UNIQUE NOT NULL, value TEXT, created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL)");
             
-            // Insert default data
             $pdo->exec("INSERT INTO stores (name, code, address, phone, email, currency, currency_symbol, is_active, is_default, created_at, updated_at) VALUES ('Main Store', 'MAIN', '123 Main Street', '+1234567890', 'info@flourish.com', 'USD', '$', true, true, NOW(), NOW())");
             $pdo->exec("INSERT INTO units (name, short_name, is_active, created_at, updated_at) VALUES ('Piece', 'pc', true, NOW(), NOW()), ('Kilogram', 'kg', true, NOW(), NOW()), ('Gram', 'g', true, NOW(), NOW()), ('Liter', 'L', true, NOW(), NOW()), ('Meter', 'm', true, NOW(), NOW())");
             $pdo->exec("INSERT INTO categories (name, is_active, created_at, updated_at) VALUES ('Groceries', true, NOW(), NOW()), ('Beverages', true, NOW(), NOW()), ('Snacks', true, NOW(), NOW()), ('Household', true, NOW(), NOW()), ('Personal Care', true, NOW(), NOW())");
@@ -149,14 +146,12 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->exec("INSERT INTO settings (key, value, created_at, updated_at) VALUES ('store_name', 'Flourish Supermarket', NOW(), NOW()), ('currency', 'USD', NOW(), NOW()), ('currency_symbol', '$', NOW(), NOW()), ('tax_rate', '0', NOW(), NOW())");
             
-            $dbType = 'pgsql';
+            $finalDbType = 'pgsql';
         } else {
-            // MySQL
             $pdo = new PDO("mysql:host={$input['host']};port={$input['port']}", $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
             $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$input['database']}`");
             $pdo->exec("USE `{$input['database']}`");
             
-            // MySQL tables (same as before)
             $pdo->exec("CREATE TABLE IF NOT EXISTS stores (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, code VARCHAR(255) UNIQUE NOT NULL, address TEXT, phone VARCHAR(255), email VARCHAR(255), currency VARCHAR(10) DEFAULT 'USD', currency_symbol VARCHAR(5) DEFAULT '$', is_active BOOLEAN DEFAULT true, is_default BOOLEAN DEFAULT false, created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL) ENGINE=InnoDB");
             $pdo->exec("CREATE TABLE IF NOT EXISTS users (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL, role ENUM('admin','manager','cashier') DEFAULT 'cashier', store_id BIGINT UNSIGNED, is_active BOOLEAN DEFAULT true, remember_token VARCHAR(100), created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL) ENGINE=InnoDB");
             $pdo->exec("CREATE TABLE IF NOT EXISTS categories (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, is_active BOOLEAN DEFAULT true, created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL) ENGINE=InnoDB");
@@ -184,21 +179,19 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->exec("INSERT INTO settings (key, value, created_at, updated_at) VALUES ('store_name', 'Flourish Supermarket', NOW(), NOW()), ('currency', 'USD', NOW(), NOW()), ('currency_symbol', '$', NOW(), NOW()), ('tax_rate', '0', NOW(), NOW())");
             
-            $dbType = 'mysql';
+            $finalDbType = 'mysql';
         }
         
-        // Determine base URL from current request
         $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
         $baseUrl = $scheme . '://' . $host;
         
-        // Create .env file
         $envContent = "APP_NAME=\"Flourish Supermarket\"\n";
         $envContent .= "APP_ENV=production\n";
         $envContent .= "APP_KEY=\n";
         $envContent .= "APP_DEBUG=false\n";
         $envContent .= "APP_URL={$baseUrl}\n\n";
-        $envContent .= "DB_CONNECTION={$dbType}\n";
+        $envContent .= "DB_CONNECTION={$finalDbType}\n";
         $envContent .= "DB_HOST={$input['host']}\n";
         $envContent .= "DB_PORT={$input['port']}\n";
         $envContent .= "DB_DATABASE={$input['database']}\n";
@@ -207,7 +200,6 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         
         file_put_contents(__DIR__ . '/.env', $envContent);
         
-        // Generate app key
         $key = 'base64:' . base64_encode(random_bytes(32));
         $envContent = file_get_contents(__DIR__ . '/.env');
         $envContent = str_replace('APP_KEY=', 'APP_KEY=' . $key, $envContent);
@@ -241,13 +233,11 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="bg-gradient-to-br from-emerald-600 to-teal-800 min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-2xl mx-auto">
-            <!-- Header -->
             <div class="text-center mb-8">
                 <h1 class="text-4xl font-bold text-white mb-2">Flourish</h1>
                 <p class="text-emerald-100 text-lg">Supermarket POS Installation</p>
             </div>
 
-            <!-- Progress Steps -->
             <div class="bg-white rounded-lg shadow-xl p-6 mb-6">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
@@ -267,9 +257,7 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <!-- Content -->
             <div id="content-area" class="bg-white rounded-lg shadow-xl p-8">
-                <!-- Requirements Check -->
                 <div id="requirements-step">
                     <h2 class="text-2xl font-bold mb-6">Server Requirements</h2>
                     
@@ -307,7 +295,6 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Database Setup -->
                 <div id="database-step" class="hidden">
                     <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
                         <p class="text-sm text-yellow-700">
@@ -355,7 +342,6 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     </form>
                 </div>
 
-                <!-- Installation -->
                 <div id="install-step" class="hidden">
                     <h2 class="text-2xl font-bold mb-6">Installing Application</h2>
                     
@@ -391,7 +377,6 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <!-- Error Display -->
             <div id="error-area" class="hidden mt-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg"></div>
         </div>
     </div>
@@ -521,15 +506,16 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     showError(data.message);
                     document.getElementById('start-install').disabled = false;
+                    document.getElementById('start-install').innerHTML = 'Start Installation';
                 }
             })
             .catch(err => {
                 showError('Installation failed: ' + err.message);
                 document.getElementById('start-install').disabled = false;
+                document.getElementById('start-install').innerHTML = 'Start Installation';
             });
         }
 
-        // Check if already installed
         fetch('install.php?action=check_installed')
             .then(res => res.json())
             .then(data => {
