@@ -1,7 +1,7 @@
 services:
   - type: web
     name: flourish-pos
-    env: php
+    runtime: php82
     buildCommand: |
       composer install --no-dev --optimize-autoloader
       npm install
