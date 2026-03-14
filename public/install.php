@@ -81,8 +81,7 @@ if ($action === 'test_db' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($isPostgres) {
             $dsn = "pgsql:host={$input['host']};port={$input['port']};dbname=postgres";
             $pdo = new PDO($dsn, $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-            // Create database
-            $pdo->exec("CREATE DATABASE \"{$input['database']}\"");
+            @$pdo->exec("CREATE DATABASE \"{$input['database']}\"");
         } else {
             $dsn = "mysql:host={$input['host']};port={$input['port']}";
             $pdo = new PDO($dsn, $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -99,6 +98,11 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Content-Type: application/json');
     $input = json_decode(file_get_contents('php://input'), true);
     
+    if (!$input || !isset($input['host']) || !isset($input['database'])) {
+        echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+        exit;
+    }
+    
     // Determine database type from input
     $dbType = $input['type'] ?? 'pgsql';
     $isPostgres = ($dbType === 'pgsql');
@@ -107,8 +111,10 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($isPostgres) {
             $dsn = "pgsql:host={$input['host']};port={$input['port']};dbname=postgres";
             $pdo = new PDO($dsn, $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-            $pdo->exec("CREATE DATABASE \"{$input['database']}\"");
-            $pdo->exec("USE \"{$input['database']}\"");
+            @$pdo->exec("CREATE DATABASE \"{$input['database']}\"");
+            
+            // Reconnect to the new database
+            $pdo = new PDO("pgsql:host={$input['host']};port={$input['port']};dbname={$input['database']}", $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
             
             // PostgreSQL tables
             $pdo->exec("CREATE TABLE IF NOT EXISTS stores (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, code VARCHAR(255) UNIQUE NOT NULL, address TEXT, phone VARCHAR(255), email VARCHAR(255), currency VARCHAR(10) DEFAULT 'USD', currency_symbol VARCHAR(5) DEFAULT '$', is_active BOOLEAN DEFAULT true, is_default BOOLEAN DEFAULT false, created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL)");
@@ -480,14 +486,21 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
         function startInstallation() {
             document.getElementById('start-install').disabled = true;
+            document.getElementById('start-install').innerHTML = 'Installing...';
+            
+            console.log('Starting installation with config:', dbConfig);
             
             fetch('install.php?action=install', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(dbConfig)
             })
-            .then(res => res.json())
+            .then(res => {
+                console.log('Response status:', res.status);
+                return res.json();
+            })
             .then(data => {
+                console.log('Response data:', data);
                 if (data.success) {
                     document.getElementById('step-migration').innerHTML = '<svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
                     document.getElementById('step-seeder').innerHTML = '<svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
