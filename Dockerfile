@@ -39,14 +39,14 @@ COPY . /var/www/html/
 # Copy production env file
 RUN cp /var/www/html/.env.production /var/www/html/.env
 
-# Generate APP_KEY using artisan
-RUN php /var/www/html/artisan key:generate
-
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
+
+# Generate APP_KEY using artisan
+RUN php /var/www/html/artisan key:generate
 
 # Set proper permissions for storage and bootstrap
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
