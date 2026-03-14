@@ -11,8 +11,9 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     git \
     curl \
+    libpq-dev \
     && docker-php-ext-configure gd \
-    && docker-php-ext-install gd pdo pdo_mysql zip
+    && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql zip
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
