@@ -4,14 +4,13 @@
 
 @section('main')
 <div class="bg-white rounded-lg shadow">
-    <div class="p-4 border-b flex justify-between items-center">
+    <div class="p-4 border-b">
         <form method="GET" class="flex gap-4">
             <input type="text" name="search" placeholder="Search by invoice number..." class="px-4 py-2 border rounded-lg" value="{{ request('search') }}">
             <input type="date" name="date_from" class="px-4 py-2 border rounded-lg" value="{{ request('date_from') }}">
             <input type="date" name="date_to" class="px-4 py-2 border rounded-lg" value="{{ request('date_to') }}">
             <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">Filter</button>
         </form>
-        <a href="{{ route('sales.cleanup') }}" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" onclick="return confirm('Delete all sales without items?')">Cleanup Empty Sales</a>
     </div>
     
     <div class="overflow-x-auto">
@@ -30,11 +29,11 @@
             <tbody class="divide-y">
                 @forelse($sales as $sale)
                 <tr>
-                    <td class="px-4 py-3">{{ $sale->invoice }}</td>
+                    <td class="px-4 py-3">{{ $sale->invoice_number }}</td>
                     <td class="px-4 py-3">{{ $sale->created_at->format('Y-m-d H:i') }}</td>
                     <td class="px-4 py-3">{{ $sale->customer?->name ?? 'Walk-in Customer' }}</td>
-                    <td class="px-4 py-3">{{ $itemCounts[$sale->id] ?? 0 }}</td>
-                    <td class="px-4 py-3">{{ format_currency($sale->total) }}</td>
+                    <td class="px-4 py-3">{{ $sale->items_count ?? $sale->items->count() }}</td>
+                    <td class="px-4 py-3">${{ number_format($sale->total_amount, 2) }}</td>
                     <td class="px-4 py-3">
                         @if($sale->status === 'completed')
                             <span class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs">Completed</span>

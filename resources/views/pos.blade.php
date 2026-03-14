@@ -3,10 +3,7 @@
 @section('header', 'POS Terminal')
 
 @section('main')
-<script>
-    const currencySymbol = '{{ currency_symbol() }}';
-</script>
-<div class="flex h-screen gap-2 p-4">
+<div class="flex h-[calc(100vh-140px)] gap-6">
     <!-- Products Panel -->
     <div class="flex-1 flex flex-col bg-white rounded-lg shadow">
         <div class="p-4 border-b">
@@ -21,25 +18,25 @@
             </div>
         </div>
         
-        <div id="products-grid" class="flex-1 overflow-y-auto p-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-0 content-start">
+        <div id="products-grid" class="flex-1 overflow-y-auto p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <!-- Products will be loaded here -->
         </div>
     </div>
 
     <!-- Cart Panel -->
-    <div class="w-96 flex flex-col bg-white rounded-lg shadow h-full">
-        <div class="p-4 border-b bg-emerald-600 text-white">
-            <h3 class="font-semibold text-lg">Current Sale</h3>
+    <div class="w-96 flex flex-col bg-white rounded-lg shadow">
+        <div class="p-4 border-b">
+            <h3 class="font-semibold">Current Sale</h3>
         </div>
         
-        <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-2 min-h-[300px]">
-            <p class="text-gray-500 text-center py-8">No items in cart</p>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <p class="text-gray-500 text-center">No items in cart</p>
         </div>
         
         <div class="border-t p-4 space-y-3">
             <div class="flex justify-between text-lg font-semibold">
                 <span>Total:</span>
-                <span id="cart-total">0.00</span>
+                <span id="cart-total">$0.00</span>
             </div>
             
             <div class="space-y-2">
@@ -81,7 +78,7 @@
             
             <div class="flex justify-between text-sm">
                 <span>Change:</span>
-                    <span id="change-amount" class="font-semibold">0.00</span>
+                <span id="change-amount" class="font-semibold">$0.00</span>
             </div>
             
             <button id="complete-sale" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
@@ -97,18 +94,15 @@
 
 <!-- Receipt Modal -->
 <div id="receipt-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-[340px] mx-4" style="background: white !important;">
-        <div class="p-2" id="receipt-content" style="max-height: 70vh; overflow-y: auto; background: white !important;">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-6" id="receipt-content">
             <!-- Receipt content will be here -->
         </div>
-        <div class="px-4 pb-4 flex gap-3">
-            <button id="print-receipt" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg">
+        <div class="px-6 pb-6 flex gap-3">
+            <button id="print-receipt" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg">
                 Print
             </button>
-            <button id="download-receipt" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg">
-                Download
-            </button>
-            <button id="close-receipt" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg">
+            <button id="close-receipt" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg">
                 Close
             </button>
         </div>
@@ -124,39 +118,26 @@ function loadProducts() {
     const search = document.getElementById('search-product').value;
     const categoryId = document.getElementById('filter-category').value;
     
-    console.log('Loading products with search:', search, 'category:', categoryId);
-    fetch('{{ route("pos.products") }}?search=' + encodeURIComponent(search) + '&category_id=' + categoryId, {
-        credentials: 'include'
-    })
-        .then(res => {
-            console.log('Response status:', res.status);
-            return res.json();
-        })
+    fetch(`/pos/products?search=${search}&category_id=${categoryId}`)
+        .then(res => res.json())
         .then(data => {
-            console.log('Products loaded:', data.length);
             products = data;
             renderProducts();
-        })
-        .catch(err => console.error('Error loading products:', err));
+        });
 }
-
-let searchTimeout;
-document.getElementById('search-product').addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(loadProducts, 300);
-});
-document.getElementById('filter-category').addEventListener('change', loadProducts);
 
 function renderProducts() {
     const grid = document.getElementById('products-grid');
-    
     grid.innerHTML = products.map(product => {
-        const stock = product.stock_quantity || 0;
+        const stock = product.product_store?.[0]?.quantity || 0;
         return `
-            <div class="border rounded cursor-pointer hover:border-emerald-500 hover:shadow-md transition h-16 mb-0.5" onclick="addToCart(${product.id})">
-                <h4 class="font-medium text-xs truncate px-1" title="${product.name}">${product.name}</h4>
-                <p class="text-emerald-600 font-bold text-sm px-1">${currencySymbol}${parseFloat(product.sell_price).toFixed(2)}</p>
-                <p class="text-xs px-1 ${stock < 10 ? 'text-red-500' : 'text-gray-500'}">Stock: ${stock}</p>
+            <div class="border rounded-lg p-3 cursor-pointer hover:border-emerald-500 hover:shadow-md transition" onclick="addToCart(${product.id})">
+                <div class="h-24 bg-gray-100 rounded-lg mb-2 flex items-center justify-center">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                </div>
+                <h4 class="font-medium text-sm truncate">${product.name}</h4>
+                <p class="text-emerald-600 font-bold">$${parseFloat(product.sell_price).toFixed(2)}</p>
+                <p class="text-xs ${stock < 10 ? 'text-red-500' : 'text-gray-500'}">Stock: ${stock}</p>
             </div>
         `;
     }).join('');
@@ -204,7 +185,7 @@ function renderCart() {
     
     if (cart.length === 0) {
         container.innerHTML = '<p class="text-gray-500 text-center">No items in cart</p>';
-        totalEl.textContent = '0.00';
+        totalEl.textContent = '$0.00';
         completeBtn.disabled = true;
         return;
     }
@@ -214,32 +195,34 @@ function renderCart() {
         const itemTotal = item.price * item.quantity;
         total += itemTotal;
         return `
-            <div class="flex items-center justify-between p-4 border rounded-lg bg-gray-50 shadow-sm">
-                <div class="flex-1 min-w-0 pr-2">
-                    <h4 class="font-semibold text-gray-800 truncate">${item.name}</h4>
-                    <p class="text-emerald-600 font-bold">${currencySymbol}${item.price.toFixed(2)} x ${item.quantity}</p>
+            <div class="flex items-center justify-between p-2 border rounded-lg">
+                <div class="flex-1">
+                    <h4 class="font-medium text-sm">${item.name}</h4>
+                    <p class="text-gray-500 text-xs">$${item.price.toFixed(2)} x ${item.quantity}</p>
                 </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                    <button onclick="updateQuantity(${item.product_id}, ${item.quantity - 1})" class="w-8 h-8 flex items-center justify-center bg-emerald-500 text-white rounded hover:bg-emerald-600 font-bold">-</button>
-                    <span class="text-base font-bold w-8 text-center">${item.quantity}</span>
-                    <button onclick="updateQuantity(${item.product_id}, ${item.quantity + 1})" class="w-8 h-8 flex items-center justify-center bg-emerald-500 text-white rounded hover:bg-emerald-600 font-bold">+</button>
-                    <button onclick="removeFromCart(${item.product_id})" class="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-100 rounded ml-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                <div class="flex items-center gap-2">
+                    <button onclick="updateQuantity(${item.product_id}, ${item.quantity - 1})" class="w-6 h-6 flex items-center justify-center bg-gray-200 rounded">-</button>
+                    <span class="text-sm font-medium">${item.quantity}</span>
+                    <button onclick="updateQuantity(${item.product_id}, ${item.quantity + 1})" class="w-6 h-6 flex items-center justify-center bg-gray-200 rounded">+</button>
+                    <button onclick="removeFromCart(${item.product_id})" class="text-red-500 ml-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
             </div>
         `;
     }).join('');
     
-    totalEl.textContent = currencySymbol + total.toFixed(2);
+    totalEl.textContent = '$' + total.toFixed(2);
     
     const amountPaid = parseFloat(document.getElementById('amount-paid').value) || 0;
     const change = amountPaid - total;
-    document.getElementById('change-amount').textContent = currencySymbol + Math.max(0, change).toFixed(2);
+    document.getElementById('change-amount').textContent = '$' + Math.max(0, change).toFixed(2);
     
     completeBtn.disabled = amountPaid < total;
 }
 
+document.getElementById('search-product').addEventListener('input', loadProducts);
+document.getElementById('filter-category').addEventListener('change', loadProducts);
 document.getElementById('amount-paid').addEventListener('input', renderCart);
 document.getElementById('clear-cart').addEventListener('click', () => {
     cart = [];
@@ -251,21 +234,17 @@ document.getElementById('complete-sale').addEventListener('click', () => {
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const paid = parseFloat(document.getElementById('amount-paid').value);
     
-    console.log('Complete sale clicked - Total:', total, 'Paid:', paid);
-    console.log('Cart items:', cart);
-    
     if (paid < total) {
         alert('Insufficient payment amount');
         return;
     }
     
-    fetch('{{ route("pos.process-sale") }}', {
+    fetch('/pos/process-sale', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
-        credentials: 'include',
         body: JSON.stringify({
             items: cart,
             customer_id: document.getElementById('customer-select').value || null,
@@ -273,19 +252,8 @@ document.getElementById('complete-sale').addEventListener('click', () => {
             paid_amount: paid
         })
     })
-    .then(res => {
-        console.log('Sale response status:', res.status);
-        if (!res.ok) {
-            return res.text().then(text => {
-                console.log('Error response:', text);
-                alert('Error: ' + text);
-                throw new Error('Server error: ' + res.status);
-            });
-        }
-        return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
-        console.log('Sale response data:', data);
         if (data.success) {
             showReceipt(data.sale_id);
             cart = [];
@@ -294,17 +262,11 @@ document.getElementById('complete-sale').addEventListener('click', () => {
         } else {
             alert(data.error);
         }
-    })
-    .catch(err => {
-        console.error('Sale error:', err);
-        alert('Error: ' + err.message);
     });
 });
 
 function showReceipt(saleId) {
-    fetch('{{ route("pos.index") }}/receipt/' + saleId, {
-        credentials: 'include'
-    })
+    fetch(`/pos/receipt/${saleId}`)
         .then(res => res.text())
         .then(html => {
             document.getElementById('receipt-content').innerHTML = html;
@@ -316,56 +278,10 @@ function showReceipt(saleId) {
 document.getElementById('close-receipt').addEventListener('click', () => {
     document.getElementById('receipt-modal').classList.add('hidden');
     document.getElementById('receipt-modal').classList.remove('flex');
-    document.getElementById('receipt-content').innerHTML = '';
-    loadProducts();
 });
-
-function openReceiptWindow() {
-    const printContent = document.getElementById('receipt-content').innerHTML;
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Receipt</title>
-            <style>
-                body { 
-                    font-family: 'Courier New', monospace; 
-                    font-size: 12px; 
-                    width: 80mm; 
-                    margin: 0 auto; 
-                    padding: 10px;
-                }
-                @media print {
-                    body { 
-                        width: 80mm; 
-                        margin: 0; 
-                        padding: 0;
-                    }
-                }
-            </style>
-        </head>
-        <body>${printContent}</body>
-        </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    return printWindow;
-}
 
 document.getElementById('print-receipt').addEventListener('click', () => {
-    const printWindow = openReceiptWindow();
-    setTimeout(() => {
-        printWindow.print();
-    }, 250);
-});
-
-document.getElementById('download-receipt').addEventListener('click', () => {
-    const printWindow = openReceiptWindow();
-    setTimeout(() => {
-        printWindow.print();
-    }, 250);
+    window.print();
 });
 
 loadProducts();

@@ -12,30 +12,31 @@ class POSController extends Controller
     {
         $categories = \App\Models\Category::where('is_active', true)->get();
         $customers = \App\Models\Customer::where('is_active', true)->get();
-        $storeId = Auth::user()->store_id ?? 1;
         
-        return view('pos', compact('categories', 'customers', 'storeId'));
+        return view('pos', compact('categories', 'customers'));
     }
 
     public function products(Request $request)
     {
-        $storeId = Auth::user()->store_id ?? 1;
-        $search = $request->search;
-        $categoryId = $request->category_id;
+        $storeId = Auth::user()->store_id;
         
-        $products = \App\Models\Product::with(['category', 'productStore'])
-            ->when($search, function($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            })
-            ->when($categoryId, function($query) use ($categoryId) {
-                $query->where('category_id', $categoryId);
-            })
-            ->get()
-            ->map(function($product) use ($storeId) {
-                $storeStock = $product->productStore->where('store_id', $storeId)->first();
-                $product->stock_quantity = $storeStock ? $storeStock->quantity : 0;
-                return $product;
+        $query = \App\Models\Product::with(['category', 'productStore' => function($q) use ($storeId) {
+            $q->where('store_id', $storeId);
+        }])->where('is_active', true);
+
+        if ($request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                  ->orWhere('sku', 'like', "%{$request->search}%")
+                  ->orWhere('barcode', 'like', "%{$request->search}%");
             });
+        }
+
+        $products = $query->limit(50)->get();
         
         return response()->json($products);
     }
@@ -49,26 +50,22 @@ class POSController extends Controller
         ]);
 
         $items = $request->items;
-        $storeId = Auth::user()->store_id ?? 1;
-        
-        \Illuminate\Support\Facades\Log::info('Processing sale with items:', ['items' => $items, 'count' => count($items)]);
+        $storeId = Auth::user()->store_id;
         
         $subtotal = 0;
         $tax = 0;
 
         foreach ($items as $item) {
             $product = \App\Models\Product::find($item['product_id']);
-            if (!$product) {
-                return response()->json(['error' => 'Product not found: ' . $item['product_id']], 422);
-            }
             $subtotal += $product->sell_price * $item['quantity'];
             $tax += ($product->sell_price * $item['quantity']) * ($product->tax_rate / 100);
         }
 
         $total = $subtotal + $tax;
         $paid = $request->paid_amount;
+        $change = $paid - $total;
 
-        if ($paid < $total) {
+        if ($change < 0) {
             return response()->json(['error' => 'Insufficient payment'], 422);
         }
 
@@ -83,28 +80,22 @@ class POSController extends Controller
             'tax' => $tax,
             'total' => $total,
             'paid' => $paid,
+            'change' => $change,
             'payment_method' => $request->payment_method,
             'status' => 'completed',
         ]);
 
         foreach ($items as $item) {
             $product = \App\Models\Product::find($item['product_id']);
-            if (!$product) {
-                continue;
-            }
             $itemTotal = $product->sell_price * $item['quantity'];
             
-            try {
-                \App\Models\SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $product->sell_price,
-                    'total' => $itemTotal,
-                ]);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Error creating sale item: ' . $e->getMessage());
-            }
+            \App\Models\SaleItem::create([
+                'sale_id' => $sale->id,
+                'product_id' => $item['product_id'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $product->sell_price,
+                'total' => $itemTotal,
+            ]);
 
             $productStore = \App\Models\ProductStore::where('product_id', $item['product_id'])
                 ->where('store_id', $storeId)
@@ -125,7 +116,7 @@ class POSController extends Controller
             'success' => true,
             'sale_id' => $sale->id,
             'invoice' => $invoice,
-            'change' => $paid - $total,
+            'change' => $change,
         ]);
     }
 

@@ -16,6 +16,7 @@ class SettingController extends Controller
     {
         $request->validate([
             'store_name' => 'required|string|max:255',
+            'currency' => 'required|string|max:10',
             'currency_symbol' => 'required|string|max:5',
             'tax_rate' => 'required|numeric|min:0|max:100',
         ]);
@@ -25,11 +26,9 @@ class SettingController extends Controller
             'currency' => $request->currency,
             'currency_symbol' => $request->currency_symbol,
             'tax_rate' => $request->tax_rate,
-            'store_address' => $request->store_address,
-            'store_phone' => $request->store_phone,
-            'store_email' => $request->store_email,
-            'low_stock_alert' => $request->low_stock_alert,
-            'invoice_prefix' => $request->has('invoice_prefix') ? 1 : 0,
+            'address' => $request->address,
+            'phone' => $request->phone,
+            'email' => $request->email,
         ];
 
         foreach ($settings as $key => $value) {

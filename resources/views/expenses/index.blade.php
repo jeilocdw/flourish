@@ -39,7 +39,7 @@
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs capitalize">{{ $expense->category }}</span>
                     </td>
-                    <td class="px-4 py-3">{{ format_currency($expense->amount) }}</td>
+                    <td class="px-4 py-3">${{ number_format($expense->amount, 2) }}</td>
                     <td class="px-4 py-3">
                         <a href="{{ route('expenses.edit', $expense) }}" class="text-blue-600 hover:underline mr-2">Edit</a>
                         <form method="POST" action="{{ route('expenses.destroy', $expense) }}" class="inline">

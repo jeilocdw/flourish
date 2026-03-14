@@ -1,77 +1,75 @@
-<div id="receipt-print" style="font-family: 'Courier New', monospace; font-size: 12px; width: 80mm; margin: 0 auto; padding: 5px;">
-    <div style="text-align: center; margin-bottom: 16px;">
-        <h2 style="margin: 0; font-size: 16px;">Flourish Supermarket</h2>
-        <p style="margin: 4px 0; font-size: 11px;">{{ $sale->store?->name ?? 'Main Store' }}</p>
-        <p style="margin: 0; font-size: 10px;">{{ $sale->store?->address ?? '' }}</p>
-    </div>
+<div class="text-center mb-6">
+    <h2 class="text-2xl font-bold">Flourish Supermarket</h2>
+    <p class="text-gray-500">{{ $sale->store?->name ?? 'Main Store' }}</p>
+    <p class="text-gray-500">{{ $sale->store?->address ?? '' }}</p>
+</div>
 
-    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 12px 0; margin: 12px 0;">
-        <div style="display: flex; justify-content: space-between;">
-            <span>Invoice:</span>
-            <span>{{ $sale->invoice }}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-            <span>Date:</span>
-            <span>{{ $sale->created_at->format('Y-m-d H:i') }}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-            <span>Cashier:</span>
-            <span>{{ $sale->user->name }}</span>
-        </div>
-        @if($sale->customer)
-        <div style="display: flex; justify-content: space-between;">
-            <span>Customer:</span>
-            <span>{{ $sale->customer->name }}</span>
-        </div>
-        @endif
+<div class="border-t border-b py-4 mb-4">
+    <div class="flex justify-between mb-2">
+        <span>Invoice:</span>
+        <span class="font-medium">{{ $sale->invoice }}</span>
     </div>
-
-    <table style="width: 100%; border-collapse: collapse; margin: 12px 0;">
-        <thead>
-            <tr style="border-bottom: 1px dashed #000;">
-                <th style="text-align: left; padding: 4px 0;">Item</th>
-                <th style="text-align: right; padding: 4px 0;">Qty</th>
-                <th style="text-align: right; padding: 4px 0;">Price</th>
-                <th style="text-align: right; padding: 4px 0;">Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($sale->items as $item)
-            <tr>
-                <td style="padding: 3px 0;">{{ $item->product->name }}</td>
-                <td style="text-align: right; padding: 3px 0;">{{ $item->quantity }}</td>
-                <td style="text-align: right; padding: 3px 0;">{{ format_currency($item->unit_price) }}</td>
-                <td style="text-align: right; padding: 3px 0;">{{ format_currency($item->total) }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-
-    <div style="border-top: 1px dashed #000; padding-top: 12px; margin-top: 12px;">
-        <div style="display: flex; justify-content: space-between;">
-            <span>Subtotal:</span>
-            <span>{{ format_currency($sale->subtotal) }}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-            <span>Tax:</span>
-            <span>{{ format_currency($sale->tax) }}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;">
-            <span>TOTAL:</span>
-            <span>{{ format_currency($sale->total) }}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-            <span>Paid:</span>
-            <span>{{ format_currency($sale->paid) }}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-            <span>Change:</span>
-            <span>{{ format_currency($sale->paid - $sale->total) }}</span>
-        </div>
+    <div class="flex justify-between mb-2">
+        <span>Date:</span>
+        <span>{{ $sale->created_at->format('Y-m-d H:i') }}</span>
     </div>
-
-    <div style="text-align: center; margin-top: 16px; font-size: 11px;">
-        <p>Payment: {{ ucfirst($sale->payment_method) }}</p>
-        <p style="margin-top: 8px;">Thank you for shopping with us!</p>
+    <div class="flex justify-between">
+        <span>Cashier:</span>
+        <span>{{ $sale->user->name }}</span>
     </div>
+    @if($sale->customer)
+    <div class="flex justify-between">
+        <span>Customer:</span>
+        <span>{{ $sale->customer->name }}</span>
+    </div>
+    @endif
+</div>
+
+<table class="w-full mb-4">
+    <thead>
+        <tr class="border-b">
+            <th class="text-left py-2">Item</th>
+            <th class="text-right py-2">Qty</th>
+            <th class="text-right py-2">Price</th>
+            <th class="text-right py-2">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($sale->items as $item)
+        <tr>
+            <td class="py-2">{{ $item->product->name }}</td>
+            <td class="text-right py-2">{{ $item->quantity }}</td>
+            <td class="text-right py-2">${{ number_format($item->unit_price, 2) }}</td>
+            <td class="text-right py-2">${{ number_format($item->total, 2) }}</td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+
+<div class="border-t pt-4">
+    <div class="flex justify-between mb-2">
+        <span>Subtotal:</span>
+        <span>${{ number_format($sale->subtotal, 2) }}</span>
+    </div>
+    <div class="flex justify-between mb-2">
+        <span>Tax:</span>
+        <span>${{ number_format($sale->tax, 2) }}</span>
+    </div>
+    <div class="flex justify-between text-xl font-bold">
+        <span>Total:</span>
+        <span>${{ number_format($sale->total, 2) }}</span>
+    </div>
+    <div class="flex justify-between mt-2">
+        <span>Paid:</span>
+        <span>${{ number_format($sale->paid, 2) }}</span>
+    </div>
+    <div class="flex justify-between">
+        <span>Change:</span>
+        <span>${{ number_format($sale->change, 2) }}</span>
+    </div>
+</div>
+
+<div class="text-center mt-6 text-gray-500">
+    <p>Payment Method: {{ ucfirst($sale->payment_method) }}</p>
+    <p class="mt-2">Thank you for shopping with us!</p>
 </div>

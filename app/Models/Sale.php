@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sale extends Model
 {
-    protected $fillable = ['invoice', 'store_id', 'customer_id', 'user_id', 'subtotal', 'tax', 'total', 'paid', 'payment_method', 'status'];
-    protected $casts = ['subtotal' => 'decimal:2', 'tax' => 'decimal:2', 'total' => 'decimal:2', 'paid' => 'decimal:2'];
+    protected $fillable = ['invoice', 'store_id', 'customer_id', 'user_id', 'subtotal', 'tax', 'total', 'paid', 'change', 'payment_method', 'status'];
+    protected $casts = ['subtotal' => 'decimal:2', 'tax' => 'decimal:2', 'total' => 'decimal:2', 'paid' => 'decimal:2', 'change' => 'decimal:2'];
 
     public function store(): BelongsTo
     {

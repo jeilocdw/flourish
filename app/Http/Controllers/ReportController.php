@@ -12,7 +12,7 @@ class ReportController extends Controller
     {
         $storeId = Auth::user()->store_id;
         
-        $query = \App\Models\Sale::with(['customer', 'user', 'store', 'items.product'])
+        $query = \App\Models\Sale::with(['customer', 'user'])
             ->when($storeId, fn($q) => $q->where('store_id', $storeId));
 
         if ($request->date_from) {
@@ -21,27 +21,14 @@ class ReportController extends Controller
         if ($request->date_to) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
-        if ($request->store_id) {
-            $query->where('store_id', $request->store_id);
-        }
 
         $sales = $query->orderBy('created_at', 'desc')->get();
         
-        $totalOrders = $sales->count();
+        $totalSales = $sales->count();
         $totalAmount = $sales->sum('total');
-        $itemsSold = $sales->loadCount('items')->sum('items_count');
-        $averageOrder = $totalOrders > 0 ? $totalAmount / $totalOrders : 0;
-        
-        $summary = [
-            'total_sales' => $totalAmount,
-            'total_orders' => $totalOrders,
-            'average_order' => $averageOrder,
-            'items_sold' => $itemsSold,
-        ];
+        $totalTax = $sales->sum('tax');
 
-        $stores = \App\Models\Store::where('is_active', true)->get();
-
-        return view('reports.sales', compact('sales', 'summary', 'stores'));
+        return view('reports.sales', compact('sales', 'totalSales', 'totalAmount', 'totalTax'));
     }
 
     public function export(Request $request)
