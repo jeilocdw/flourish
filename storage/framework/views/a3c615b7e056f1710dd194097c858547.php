@@ -2,7 +2,7 @@
 
 <?php $__env->startSection('main'); ?>
 <div class="bg-white rounded-lg shadow p-6">
-    <form method="POST" action="<?php echo e(route('products.update', $product)); ?>" class="space-y-4">
+    <form method="POST" action="<?php echo e(route('products.update', $product)); ?>" class="space-y-4" enctype="multipart/form-data">
         <?php echo csrf_field(); ?>
         <?php echo method_field('PUT'); ?>
         

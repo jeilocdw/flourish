@@ -14,7 +14,7 @@
             Email Address
         </label>
         <input class="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" 
-               id="email" type="email" name="email" value="<?php echo e(old('email')); ?>" required autofocus placeholder="admin@example.com">
+               id="email" type="email" name="email" value="<?php echo e(old('email')); ?>" required autofocus placeholder="Enter your email">
     </div>
 
     <div class="mb-6">
@@ -29,12 +29,6 @@
         Sign In
     </button>
 </form>
-
-<div class="mt-6 text-center text-sm text-gray-500">
-    <p>Default Login:</p>
-    <p>Email: admin@example.com</p>
-    <p>Password: admin123</p>
-</div>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.auth', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\wamp64\www\flourish\flourish\resources\views/auth/login.blade.php ENDPATH**/ ?>

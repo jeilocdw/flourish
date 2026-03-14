@@ -35,8 +35,33 @@
                     <h3 class="text-lg font-medium mb-4">Business Settings</h3>
                     
                     <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                        <select name="currency" id="currency-select" class="w-full px-4 py-2 border rounded-lg">
+                            <option value="">Select Currency</option>
+                            <option value="USD" data-symbol="$" <?php echo e(($settings['currency'] ?? '') === 'USD' ? 'selected' : ''); ?>>USD - US Dollar</option>
+                            <option value="EUR" data-symbol="€" <?php echo e(($settings['currency'] ?? '') === 'EUR' ? 'selected' : ''); ?>>EUR - Euro</option>
+                            <option value="GBP" data-symbol="£" <?php echo e(($settings['currency'] ?? '') === 'GBP' ? 'selected' : ''); ?>>GBP - British Pound</option>
+                            <option value="NGN" data-symbol="₦" <?php echo e(($settings['currency'] ?? '') === 'NGN' ? 'selected' : ''); ?>>NGN - Nigerian Naira</option>
+                            <option value="KES" data-symbol="KSh" <?php echo e(($settings['currency'] ?? '') === 'KES' ? 'selected' : ''); ?>>KES - Kenyan Shilling</option>
+                            <option value="GHS" data-symbol="₵" <?php echo e(($settings['currency'] ?? '') === 'GHS' ? 'selected' : ''); ?>>GHS - Ghanaian Cedi</option>
+                            <option value="ZAR" data-symbol="R" <?php echo e(($settings['currency'] ?? '') === 'ZAR' ? 'selected' : ''); ?>>ZAR - South African Rand</option>
+                            <option value="INR" data-symbol="₹" <?php echo e(($settings['currency'] ?? '') === 'INR' ? 'selected' : ''); ?>>INR - Indian Rupee</option>
+                            <option value="BDT" data-symbol="৳" <?php echo e(($settings['currency'] ?? '') === 'BDT' ? 'selected' : ''); ?>>BDT - Bangladeshi Taka</option>
+                            <option value="PKR" data-symbol="₨" <?php echo e(($settings['currency'] ?? '') === 'PKR' ? 'selected' : ''); ?>>PKR - Pakistani Rupee</option>
+                            <option value="PHP" data-symbol="₱" <?php echo e(($settings['currency'] ?? '') === 'PHP' ? 'selected' : ''); ?>>PHP - Philippine Peso</option>
+                            <option value="IDR" data-symbol="Rp" <?php echo e(($settings['currency'] ?? '') === 'IDR' ? 'selected' : ''); ?>>IDR - Indonesian Rupiah</option>
+                            <option value="MYR" data-symbol="RM" <?php echo e(($settings['currency'] ?? '') === 'MYR' ? 'selected' : ''); ?>>MYR - Malaysian Ringgit</option>
+                            <option value="SGD" data-symbol="S$" <?php echo e(($settings['currency'] ?? '') === 'SGD' ? 'selected' : ''); ?>>SGD - Singapore Dollar</option>
+                            <option value="AUD" data-symbol="A$" <?php echo e(($settings['currency'] ?? '') === 'AUD' ? 'selected' : ''); ?>>AUD - Australian Dollar</option>
+                            <option value="CAD" data-symbol="C$" <?php echo e(($settings['currency'] ?? '') === 'CAD' ? 'selected' : ''); ?>>CAD - Canadian Dollar</option>
+                            <option value="JPY" data-symbol="¥" <?php echo e(($settings['currency'] ?? '') === 'JPY' ? 'selected' : ''); ?>>JPY - Japanese Yen</option>
+                            <option value="CNY" data-symbol="¥" <?php echo e(($settings['currency'] ?? '') === 'CNY' ? 'selected' : ''); ?>>CNY - Chinese Yuan</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Currency Symbol</label>
-                        <input type="text" name="currency_symbol" value="<?php echo e($settings['currency_symbol'] ?? '$'); ?>" class="w-full px-4 py-2 border rounded-lg">
+                        <input type="text" name="currency_symbol" id="currency-symbol" value="<?php echo e($settings['currency_symbol'] ?? '$'); ?>" class="w-full px-4 py-2 border rounded-lg">
                     </div>
                     
                     <div class="mb-4">
@@ -64,6 +89,14 @@
         </form>
     </div>
 </div>
+
+<script>
+document.getElementById('currency-select').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const symbol = selectedOption.dataset.symbol || '';
+    document.getElementById('currency-symbol').value = symbol;
+});
+</script>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\wamp64\www\flourish\flourish\resources\views/settings/index.blade.php ENDPATH**/ ?>

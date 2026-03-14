@@ -37,7 +37,7 @@
                     <td class="px-4 py-3">
                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs capitalize"><?php echo e($expense->category); ?></span>
                     </td>
-                    <td class="px-4 py-3">$<?php echo e(number_format($expense->amount, 2)); ?></td>
+                    <td class="px-4 py-3"><?php echo e(format_currency($expense->amount)); ?></td>
                     <td class="px-4 py-3">
                         <a href="<?php echo e(route('expenses.edit', $expense)); ?>" class="text-blue-600 hover:underline mr-2">Edit</a>
                         <form method="POST" action="<?php echo e(route('expenses.destroy', $expense)); ?>" class="inline">

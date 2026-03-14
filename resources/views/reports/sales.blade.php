@@ -32,7 +32,7 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
     <div class="bg-white rounded-lg shadow p-4">
         <p class="text-sm text-gray-500">Total Sales</p>
-        <p class="text-2xl font-bold">${{ number_format($summary['total_sales'] ?? 0, 2) }}</p>
+        <p class="text-2xl font-bold">{{ format_currency($summary['total_sales'] ?? 0) }}</p>
     </div>
     <div class="bg-white rounded-lg shadow p-4">
         <p class="text-sm text-gray-500">Total Orders</p>
@@ -40,7 +40,7 @@
     </div>
     <div class="bg-white rounded-lg shadow p-4">
         <p class="text-sm text-gray-500">Average Order</p>
-        <p class="text-2xl font-bold">${{ number_format($summary['average_order'] ?? 0, 2) }}</p>
+        <p class="text-2xl font-bold">{{ format_currency($summary['average_order'] ?? 0) }}</p>
     </div>
     <div class="bg-white rounded-lg shadow p-4">
         <p class="text-sm text-gray-500">Items Sold</p>
@@ -69,14 +69,21 @@
             </thead>
             <tbody class="divide-y">
                 @forelse($sales as $sale)
+                @php
+                    $profit = 0;
+                    foreach ($sale->items as $item) {
+                        $cost = $item->product->cost_price ?? 0;
+                        $profit += ($item->unit_price - $cost) * $item->quantity;
+                    }
+                @endphp
                 <tr>
                     <td class="px-4 py-3">{{ $sale->created_at->format('Y-m-d') }}</td>
-                    <td class="px-4 py-3">{{ $sale->invoice_number }}</td>
+                    <td class="px-4 py-3">{{ $sale->invoice }}</td>
                     <td class="px-4 py-3">{{ $sale->customer?->name ?? 'Walk-in' }}</td>
                     <td class="px-4 py-3">{{ $sale->store?->name ?? '-' }}</td>
                     <td class="px-4 py-3">{{ $sale->items->sum('quantity') }}</td>
-                    <td class="px-4 py-3">${{ number_format($sale->total_amount, 2) }}</td>
-                    <td class="px-4 py-3">${{ number_format($sale->profit ?? 0, 2) }}</td>
+                    <td class="px-4 py-3">{{ format_currency($sale->total) }}</td>
+                    <td class="px-4 py-3">{{ format_currency($profit) }}</td>
                 </tr>
                 @empty
                 <tr>

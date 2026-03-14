@@ -17,6 +17,11 @@ Route::post('/logout', [\App\Http\Controllers\AuthController::class, 'logout'])-
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     
+    Route::get('/pos', [\App\Http\Controllers\POSController::class, 'index'])->name('pos.index');
+    Route::get('/pos/products', [\App\Http\Controllers\POSController::class, 'products'])->name('pos.products');
+    Route::post('/pos/process-sale', [\App\Http\Controllers\POSController::class, 'processSale'])->name('pos.process-sale');
+    Route::get('/pos/receipt/{sale}', [\App\Http\Controllers\POSController::class, 'receipt'])->name('pos.receipt');
+    
     Route::get('/products/export', [\App\Http\Controllers\ProductController::class, 'export'])->name('products.export');
     Route::get('/products/template', [\App\Http\Controllers\ProductController::class, 'template'])->name('products.template');
     Route::post('/products/import', [\App\Http\Controllers\ProductController::class, 'import'])->name('products.import');
@@ -26,16 +31,12 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('units', \App\Http\Controllers\UnitController::class);
     Route::resource('customers', \App\Http\Controllers\CustomerController::class);
     Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
+    Route::get('/sales/cleanup', [\App\Http\Controllers\SaleController::class, 'cleanup'])->name('sales.cleanup');
     Route::resource('sales', \App\Http\Controllers\SaleController::class);
     Route::resource('purchases', \App\Http\Controllers\PurchaseController::class);
     Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
     Route::resource('users', \App\Http\Controllers\UserController::class);
     Route::resource('stores', \App\Http\Controllers\StoreController::class);
-    
-    Route::get('/pos', [\App\Http\Controllers\POSController::class, 'index'])->name('pos.index');
-    Route::get('/pos/products', [\App\Http\Controllers\POSController::class, 'products']);
-    Route::post('/pos/process-sale', [\App\Http\Controllers\POSController::class, 'processSale']);
-    Route::get('/pos/receipt/{sale}', [\App\Http\Controllers\POSController::class, 'receipt']);
     
     Route::get('/inventory', [\App\Http\Controllers\InventoryController::class, 'index'])->name('inventory.index');
     Route::get('/inventory/low-stock', [\App\Http\Controllers\InventoryController::class, 'lowStock'])->name('inventory.lowStock');

@@ -32,7 +32,7 @@
                     <td class="px-4 py-3"><?php echo e($purchase->created_at->format('Y-m-d H:i')); ?></td>
                     <td class="px-4 py-3"><?php echo e($purchase->supplier?->name ?? 'N/A'); ?></td>
                     <td class="px-4 py-3"><?php echo e($purchase->items_count ?? $purchase->items->count()); ?></td>
-                    <td class="px-4 py-3">$<?php echo e(number_format($purchase->total_amount, 2)); ?></td>
+                    <td class="px-4 py-3"><?php echo e(format_currency($purchase->total)); ?></td>
                     <td class="px-4 py-3">
                         <?php if($purchase->status === 'received'): ?>
                             <span class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs">Received</span>

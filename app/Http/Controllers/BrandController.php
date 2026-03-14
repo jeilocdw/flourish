@@ -8,7 +8,7 @@ class BrandController extends Controller
 {
     public function index()
     {
-        $brands = \App\Models\Brand::paginate(20);
+        $brands = \App\Models\Brand::withCount('products')->paginate(20);
         return view('brands.index', compact('brands'));
     }
 

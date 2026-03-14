@@ -61,8 +61,8 @@
                     <td class="px-4 py-3">{{ $product->name }}</td>
                     <td class="px-4 py-3">{{ $product->sku }}</td>
                     <td class="px-4 py-3">{{ $product->category?->name }}</td>
-                    <td class="px-4 py-3">${{ number_format($product->cost_price, 2) }}</td>
-                    <td class="px-4 py-3">${{ number_format($product->sell_price, 2) }}</td>
+                    <td class="px-4 py-3">{{ format_currency($product->cost_price) }}</td>
+                    <td class="px-4 py-3">{{ format_currency($product->sell_price) }}</td>
                     <td class="px-4 py-3">
                         @php $stock = $product->productStore->sum('quantity') @endphp
                         <span class="{{ $stock < 10 ? 'text-red-600' : '' }}">{{ $stock }}</span>

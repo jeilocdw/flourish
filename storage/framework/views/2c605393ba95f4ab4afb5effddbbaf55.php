@@ -2,13 +2,14 @@
 
 <?php $__env->startSection('main'); ?>
 <div class="bg-white rounded-lg shadow">
-    <div class="p-4 border-b">
+    <div class="p-4 border-b flex justify-between items-center">
         <form method="GET" class="flex gap-4">
             <input type="text" name="search" placeholder="Search by invoice number..." class="px-4 py-2 border rounded-lg" value="<?php echo e(request('search')); ?>">
             <input type="date" name="date_from" class="px-4 py-2 border rounded-lg" value="<?php echo e(request('date_from')); ?>">
             <input type="date" name="date_to" class="px-4 py-2 border rounded-lg" value="<?php echo e(request('date_to')); ?>">
             <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">Filter</button>
         </form>
+        <a href="<?php echo e(route('sales.cleanup')); ?>" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" onclick="return confirm('Delete all sales without items?')">Cleanup Empty Sales</a>
     </div>
     
     <div class="overflow-x-auto">
@@ -27,11 +28,11 @@
             <tbody class="divide-y">
                 <?php $__empty_1 = true; $__currentLoopData = $sales; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sale): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <tr>
-                    <td class="px-4 py-3"><?php echo e($sale->invoice_number); ?></td>
+                    <td class="px-4 py-3"><?php echo e($sale->invoice); ?></td>
                     <td class="px-4 py-3"><?php echo e($sale->created_at->format('Y-m-d H:i')); ?></td>
                     <td class="px-4 py-3"><?php echo e($sale->customer?->name ?? 'Walk-in Customer'); ?></td>
-                    <td class="px-4 py-3"><?php echo e($sale->items_count ?? $sale->items->count()); ?></td>
-                    <td class="px-4 py-3">$<?php echo e(number_format($sale->total_amount, 2)); ?></td>
+                    <td class="px-4 py-3"><?php echo e($itemCounts[$sale->id] ?? 0); ?></td>
+                    <td class="px-4 py-3"><?php echo e(format_currency($sale->total)); ?></td>
                     <td class="px-4 py-3">
                         <?php if($sale->status === 'completed'): ?>
                             <span class="px-2 py-1 bg-green-100 text-green-600 rounded text-xs">Completed</span>

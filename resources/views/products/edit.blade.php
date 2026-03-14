@@ -4,7 +4,7 @@
 
 @section('main')
 <div class="bg-white rounded-lg shadow p-6">
-    <form method="POST" action="{{ route('products.update', $product) }}" class="space-y-4">
+    <form method="POST" action="{{ route('products.update', $product) }}" class="space-y-4" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         

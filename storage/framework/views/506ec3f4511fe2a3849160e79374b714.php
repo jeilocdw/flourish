@@ -30,7 +30,7 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
     <div class="bg-white rounded-lg shadow p-4">
         <p class="text-sm text-gray-500">Total Sales</p>
-        <p class="text-2xl font-bold">$<?php echo e(number_format($summary['total_sales'] ?? 0, 2)); ?></p>
+        <p class="text-2xl font-bold"><?php echo e(format_currency($summary['total_sales'] ?? 0)); ?></p>
     </div>
     <div class="bg-white rounded-lg shadow p-4">
         <p class="text-sm text-gray-500">Total Orders</p>
@@ -38,7 +38,7 @@
     </div>
     <div class="bg-white rounded-lg shadow p-4">
         <p class="text-sm text-gray-500">Average Order</p>
-        <p class="text-2xl font-bold">$<?php echo e(number_format($summary['average_order'] ?? 0, 2)); ?></p>
+        <p class="text-2xl font-bold"><?php echo e(format_currency($summary['average_order'] ?? 0)); ?></p>
     </div>
     <div class="bg-white rounded-lg shadow p-4">
         <p class="text-sm text-gray-500">Items Sold</p>
@@ -67,14 +67,21 @@
             </thead>
             <tbody class="divide-y">
                 <?php $__empty_1 = true; $__currentLoopData = $sales; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sale): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                <?php
+                    $profit = 0;
+                    foreach ($sale->items as $item) {
+                        $cost = $item->product->cost_price ?? 0;
+                        $profit += ($item->unit_price - $cost) * $item->quantity;
+                    }
+                ?>
                 <tr>
                     <td class="px-4 py-3"><?php echo e($sale->created_at->format('Y-m-d')); ?></td>
-                    <td class="px-4 py-3"><?php echo e($sale->invoice_number); ?></td>
+                    <td class="px-4 py-3"><?php echo e($sale->invoice); ?></td>
                     <td class="px-4 py-3"><?php echo e($sale->customer?->name ?? 'Walk-in'); ?></td>
                     <td class="px-4 py-3"><?php echo e($sale->store?->name ?? '-'); ?></td>
                     <td class="px-4 py-3"><?php echo e($sale->items->sum('quantity')); ?></td>
-                    <td class="px-4 py-3">$<?php echo e(number_format($sale->total_amount, 2)); ?></td>
-                    <td class="px-4 py-3">$<?php echo e(number_format($sale->profit ?? 0, 2)); ?></td>
+                    <td class="px-4 py-3"><?php echo e(format_currency($sale->total)); ?></td>
+                    <td class="px-4 py-3"><?php echo e(format_currency($profit)); ?></td>
                 </tr>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <tr>

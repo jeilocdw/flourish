@@ -8,7 +8,7 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = \App\Models\Category::paginate(20);
+        $categories = \App\Models\Category::withCount('products')->paginate(20);
         return view('categories.index', compact('categories'));
     }
 

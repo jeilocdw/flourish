@@ -47,7 +47,9 @@ class ProductController extends Controller
             'sell_price' => 'required|numeric|min:0',
         ]);
 
-        $product = \App\Models\Product::create($request->all());
+        $data = $request->except(['stock_quantity']);
+        
+        $product = \App\Models\Product::create($data);
 
         $storeId = auth()->user()->store_id;
         \App\Models\ProductStore::create([
@@ -86,7 +88,29 @@ class ProductController extends Controller
             'sell_price' => 'required|numeric|min:0',
         ]);
 
-        $product->update($request->except(['stock_quantity']));
+        $data = $request->except(['stock_quantity', 'image']);
+        
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $filename = time() . '_' . $image->getClientOriginalName();
+            
+            $destinationPath = public_path('products');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+            
+            $image->move($destinationPath, $filename);
+            
+            try {
+                \DB::statement('ALTER TABLE products ADD COLUMN image VARCHAR(255)');
+            } catch (\Exception $e) {
+                // Column may already exist
+            }
+            
+            $product->update(['image' => $filename]);
+        }
+
+        $product->update($data);
 
         if ($request->has('stock_quantity')) {
             $storeId = auth()->user()->store_id;
