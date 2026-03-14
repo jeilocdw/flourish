@@ -111,8 +111,12 @@ if ($action === 'install' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($isPostgres) {
             $dsn = "pgsql:host={$input['host']};port={$input['port']};dbname=postgres";
             $pdo = new PDO($dsn, $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-            @$pdo->exec("CREATE DATABASE \"{$input['database']}\"");
-            
+            // Try to create database, ignore if already exists
+            try {
+                $pdo->exec("CREATE DATABASE \"{$input['database']}\"");
+            } catch (Exception $e) {
+                // Database already exists, continue
+            }
             // Reconnect to the new database
             $pdo = new PDO("pgsql:host={$input['host']};port={$input['port']};dbname={$input['database']}", $input['username'], $input['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
             
