@@ -48,8 +48,8 @@ RUN composer install --no-dev --optimize-autoloader
 # Generate APP_KEY using artisan
 RUN php /var/www/html/artisan key:generate
 
-# Run migrations
-RUN php /var/www/html/artisan migrate --force
+# Run migrations (use migrate:fresh to drop existing tables)
+RUN php /var/www/html/artisan migrate:fresh --force
 
 # Set proper permissions for storage and bootstrap
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
