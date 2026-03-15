@@ -36,11 +36,11 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . /var/www/html/
 
-# Copy production env file (without APP_KEY - we'll generate it)
+# Copy production env file (with fixed APP_KEY for session persistence)
 RUN cat > /var/www/html/.env <<'EOF'
 APP_NAME="Flourish Supermarket"
 APP_ENV=production
-APP_KEY=
+APP_KEY=base64:MTIzNDU2Nzg5MGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6
 APP_DEBUG=true
 APP_URL=https://flourish-mtgv.onrender.com
 
@@ -60,22 +60,16 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Generate APP_KEY using artisan
-RUN php /var/www/html/artisan key:generate
-
-# Run migrations (use migrate:fresh to drop existing tables)
-RUN php /var/www/html/artisan migrate:fresh --force
-
-# Create session table
-RUN php /var/www/html/artisan session:table
+# Run migrations (NOT fresh - preserve existing data)
 RUN php /var/www/html/artisan migrate --force
+
+# Create session table if not exists
+RUN php /var/www/html/artisan session:table || true
+RUN php /var/www/html/artisan migrate --force || true
 
 # Create storage directories
 RUN php /var/www/html/artisan storage:link
 RUN mkdir -p /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs
-
-# Run seeders to create default user
-RUN php /var/www/html/artisan db:seed --class=DatabaseSeeder --force
 
 # Set proper permissions for storage and bootstrap
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
