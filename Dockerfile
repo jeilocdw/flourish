@@ -52,6 +52,7 @@ DB_USERNAME=flourish_pos_user
 DB_PASSWORD=wGcnEzkOGfX6jwTbB4yv6RTMP445p9dk
 
 SESSION_DRIVER=database
+SESSION_SECURE_COOKIE=true
 EOF
 
 # Install Composer
