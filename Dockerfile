@@ -56,7 +56,7 @@ RUN php /var/www/html/artisan storage:link
 RUN mkdir -p /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs
 
 # Run seeders to create default user
-RUN php /var/www/html/artisan tinker --execute="DB::table('users')->insert(['name'=>'Administrator','email'=>'admin@example.com','password'=>Hash::make('admin123'),'role'=>'admin','store_id'=>1,'is_active'=>true,'created_at'=>now(),'updated_at'=>now()]);"
+RUN php /var/www/html/artisan db:seed --class=DatabaseSeeder --force
 
 # Set proper permissions for storage and bootstrap
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
