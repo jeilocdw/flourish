@@ -37,20 +37,22 @@ WORKDIR /var/www/html
 COPY . /var/www/html/
 
 # Copy production env file (without APP_KEY - we'll generate it)
-RUN echo 'APP_NAME="Flourish Supermarket"\
-APP_ENV=production\
-APP_KEY=\
-APP_DEBUG=true\
-APP_URL=https://flourish-mtgv.onrender.com\
-\
-DB_CONNECTION=pgsql\
-DB_HOST=dpg-d6qomga4d50c73bh5b5g-a\
-DB_PORT=5432\
-DB_DATABASE=flourish-pos\
-DB_USERNAME=flourish_pos_user\
-DB_PASSWORD=wGcnEzkOGfX6jwTbB4yv6RTMP445p9dk\
-\
-SESSION_DRIVER=database' > /var/www/html/.env
+RUN cat > /var/www/html/.env <<'EOF'
+APP_NAME="Flourish Supermarket"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=true
+APP_URL=https://flourish-mtgv.onrender.com
+
+DB_CONNECTION=pgsql
+DB_HOST=dpg-d6qomga4d50c73bh5b5g-a
+DB_PORT=5432
+DB_DATABASE=flourish-pos
+DB_USERNAME=flourish_pos_user
+DB_PASSWORD=wGcnEzkOGfX6jwTbB4yv6RTMP445p9dk
+
+SESSION_DRIVER=database
+EOF
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
