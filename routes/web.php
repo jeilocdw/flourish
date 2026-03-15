@@ -35,8 +35,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pos/receipt/{sale}', [\App\Http\Controllers\POSController::class, 'receipt']);
     
     Route::get('/inventory', [\App\Http\Controllers\InventoryController::class, 'index'])->name('inventory.index');
-    Route::get('/inventory/low-stock', [\App\Http\Controllers\InventoryController::class, 'lowStock']);
-    Route::get('/inventory/expiring', [\App\Http\Controllers\InventoryController::class, 'expiring']);
+    Route::get('/inventory/low-stock', [\App\Http\Controllers\InventoryController::class, 'lowStock'])->name('inventory.lowStock');
+    Route::get('/inventory/expiring', [\App\Http\Controllers\InventoryController::class, 'expiring'])->name('inventory.expiring');
     
     Route::get('/reports/sales', [\App\Http\Controllers\ReportController::class, 'sales']);
     Route::get('/reports/export', [\App\Http\Controllers\ReportController::class, 'export']);
