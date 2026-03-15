@@ -51,6 +51,10 @@ RUN php /var/www/html/artisan key:generate
 # Run migrations (use migrate:fresh to drop existing tables)
 RUN php /var/www/html/artisan migrate:fresh --force
 
+# Create storage directories
+RUN php /var/www/html/artisan storage:link
+RUN mkdir -p /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs
+
 # Set proper permissions for storage and bootstrap
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 
