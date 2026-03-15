@@ -37,7 +37,7 @@ WORKDIR /var/www/html
 COPY . /var/www/html/
 
 # Copy production env file (without APP_KEY - we'll generate it)
-RUN echo "APP_NAME=\"Flourish Supermarket\"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=true\nAPP_URL=https://flourish-gjj7.onrender.com\n\nDB_CONNECTION=pgsql\nDB_HOST=dpg-d6qomga4d50c73bh5b5g-a\nDB_PORT=5432\nDB_DATABASE=flourish-pos\nDB_USERNAME=flourish_pos_user\nDB_PASSWORD=wGcnEzkOGfX6jwTbB4yv6RTMP445p9dk" > /var/www/html/.env
+RUN echo "APP_NAME=\"Flourish Supermarket\"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=true\nAPP_URL=https://flourish-mtgv.onrender.com\n\nDB_CONNECTION=pgsql\nDB_HOST=dpg-d6qomga4d50c73bh5b5g-a\nDB_PORT=5432\nDB_DATABASE=flourish-pos\nDB_USERNAME=flourish_pos_user\nDB_PASSWORD=wGcnEzkOGfX6jwTbB4yv6RTMP445p9dk\n\nSESSION_DRIVER=file" > /var/www/html/.env
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -47,6 +47,9 @@ RUN composer install --no-dev --optimize-autoloader
 
 # Generate APP_KEY using artisan
 RUN php /var/www/html/artisan key:generate
+
+# Run migrations
+RUN php /var/www/html/artisan migrate --force
 
 # Set proper permissions for storage and bootstrap
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
