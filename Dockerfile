@@ -37,7 +37,7 @@ WORKDIR /var/www/html
 COPY . /var/www/html/
 
 # Copy production env file (without APP_KEY - we'll generate it)
-RUN echo "APP_NAME=\"Flourish Supermarket\"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=true\nAPP_URL=https://flourish-mtgv.onrender.com\n\nDB_CONNECTION=pgsql\nDB_HOST=dpg-d6qomga4d50c73bh5b5g-a\nDB_PORT=5432\nDB_DATABASE=flourish-pos\nDB_USERNAME=flourish_pos_user\nDB_PASSWORD=wGcnEzkOGfX6jwTbB4yv6RTMP445p9dk\n\nSESSION_DRIVER=file" > /var/www/html/.env
+RUN echo "APP_NAME=\"Flourish Supermarket\"\nAPP_ENV=production\nAPP_KEY=\nAPP_DEBUG=true\nAPP_URL=https://flourish-mtgv.onrender.com\n\nDB_CONNECTION=pgsql\nDB_HOST=dpg-d6qomga4d50c73bh5b5g-a\nDB_PORT=5432\nDB_DATABASE=flourish-pos\nDB_USERNAME=flourish_pos_user\nDB_PASSWORD=wGcnEzkOGfX6jwTbB4yv6RTMP445p9dk\n\nSESSION_DRIVER=database" > /var/www/html/.env
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -50,6 +50,10 @@ RUN php /var/www/html/artisan key:generate
 
 # Run migrations (use migrate:fresh to drop existing tables)
 RUN php /var/www/html/artisan migrate:fresh --force
+
+# Create session table
+RUN php /var/www/html/artisan session:table
+RUN php /var/www/html/artisan migrate --force
 
 # Create storage directories
 RUN php /var/www/html/artisan storage:link
