@@ -40,7 +40,7 @@ COPY . /var/www/html/
 RUN cat > /var/www/html/.env <<'EOF'
 APP_NAME="Flourish Supermarket"
 APP_ENV=production
-APP_KEY=base64:dH5xQzVwMnM0c2VyZzJ5OGg1bnM4eDZoejVnOGg=
+APP_KEY=base64:vmNgffQozcNVgi4ByvQdcK39pxEOZw3CudqlXq1nNa8=
 APP_DEBUG=true
 APP_URL=https://flourish-mtgv.onrender.com
 
